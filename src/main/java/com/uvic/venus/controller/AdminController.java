@@ -1,17 +1,16 @@
 package com.uvic.venus.controller;
 
 import com.uvic.venus.model.UserInfo;
+import com.uvic.venus.model.UserInfoWithRole;
 import com.uvic.venus.repository.UserInfoDAO;
 import com.uvic.venus.storage.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,7 +43,20 @@ public class AdminController {
     @RequestMapping(value = "/fetchusers", method = RequestMethod.GET)
     public ResponseEntity<?> fetchAllUsers(){
         List<UserInfo> userInfoList = userInfoDAO.findAll();
-        return ResponseEntity.ok(userInfoList);
+        JdbcUserDetailsManager manager = new JdbcUserDetailsManager(dataSource);
+        List<UserInfoWithRole> userWithRoleList = userInfoList.stream()
+            .map(u -> new UserInfoWithRole(u.getUsername(),
+                                           u.getFirstName(),
+                                           u.getLastName(),
+
+                                           // It may be better to make this an array if we add more roles
+                                           manager.loadUserByUsername(u.getUsername()).getAuthorities()
+                                           .contains(new SimpleGrantedAuthority("ROLE_STAFF"))
+                                           ? new SimpleGrantedAuthority("ROLE_STAFF")
+                                           : new SimpleGrantedAuthority("ROLE_USER"),
+                                           manager.loadUserByUsername(u.getUsername()).isEnabled()))
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(userWithRoleList);
     }
 
     @RequestMapping(value ="/enableuser", method = RequestMethod.GET)
