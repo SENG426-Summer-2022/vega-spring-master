@@ -40,8 +40,8 @@ public class AdminController {
     @Autowired
     StorageService storageService;
 
-    @RequestMapping(value = "/fetchusers", method = RequestMethod.GET)
-    public ResponseEntity<?> fetchAllUsers(){
+    @GetMapping(value = "/fetchusers")
+    public ResponseEntity<List<UserInfoWithRole>> fetchAllUsers(){
         List<UserInfo> userInfoList = userInfoDAO.findAll();
         JdbcUserDetailsManager manager = new JdbcUserDetailsManager(dataSource);
         List<UserInfoWithRole> userWithRoleList = userInfoList.stream()
@@ -59,8 +59,8 @@ public class AdminController {
         return ResponseEntity.ok(userWithRoleList);
     }
 
-    @RequestMapping(value ="/enableuser", method = RequestMethod.GET)
-    public ResponseEntity<?> enableUserAccount(@RequestParam String username, @RequestParam boolean enable){
+    @GetMapping(value ="/enableuser")
+    public ResponseEntity<String> enableUserAccount(@RequestParam String username, @RequestParam boolean enable){
         JdbcUserDetailsManager manager = new JdbcUserDetailsManager(dataSource);
         UserDetails userDetails = manager.loadUserByUsername(username);
 
@@ -74,8 +74,8 @@ public class AdminController {
         return ResponseEntity.ok("User Updated Successfully");
     }
 
-    @RequestMapping(value ="/changerole", method = RequestMethod.GET)
-    public ResponseEntity<?> changeRole(@RequestParam String username, @RequestParam String role){
+    @GetMapping(value ="/changerole")
+    public ResponseEntity<String> changeRole(@RequestParam String username, @RequestParam String role){
         List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
         authorities.add(new SimpleGrantedAuthority(role));
 
@@ -93,7 +93,7 @@ public class AdminController {
     }
 
     @PostMapping(value = "/handlefileupload")
-    public ResponseEntity<?> handleFileUpload(@RequestParam("file") MultipartFile file){
+    public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile file){
         storageService.store(file);
         return ResponseEntity.ok("File uploaded Successfully");
     }
