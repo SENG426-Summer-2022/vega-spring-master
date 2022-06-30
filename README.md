@@ -42,14 +42,14 @@ docker stop container-id
 
 Starting spring applicaiton will initialize the database (intialization can be controlled with property named "spring.sql.init.mode=always") with three different tables users, authorities and userinfo. Afterwards initialize all these tables with data from below table.
 
-| Email | First Name | Last Name | Role |
-| --- | --- | --- | --- |
-| admin@venus.com | admin | admin | ROLE_ADMIN
-| paulaguilar@venus.com | Paul | Aguilar | ROLE_STAFF |
-| jonoliver@venus.com | Jon | Oliver | ROLE_STAFF |
-| claudinezhang@venus.com | Claudine |  Zhang | ROLE_STAFF |
-| lovelinkumar@venus.com | Lovelin | Kumar | ROLE_STAFF |
-| michelkouame@venus.com | Michel | Kouame | ROLE_STAFF |
-| angelinacosta@venus.com | Angelina | Costa | ROLE_STAFF |
-| brijeshgupta@venus.com | Brijesh | Gupta | ROLE_STAFF |
-| amyfofana@venus.com | Amy | Fofana | ROLE_STAFF |
+| Email                   | First Name | Last Name | Role       |
+|-------------------------|------------|-----------|------------|
+| admin@venus.com         | admin      | admin     | ROLE_ADMIN |
+| paulaguilar@venus.com   | Paul       | Aguilar   | ROLE_STAFF |
+| jonoliver@venus.com     | Jon        | Oliver    | ROLE_STAFF |
+| claudinezhang@venus.com | Claudine   | Zhang     | ROLE_STAFF |
+| lovelinkumar@venus.com  | Lovelin    | Kumar     | ROLE_STAFF |
+| michelkouame@venus.com  | Michel     | Kouame    | ROLE_STAFF |
+| angelinacosta@venus.com | Angelina   | Costa     | ROLE_STAFF |
+| brijeshgupta@venus.com  | Brijesh    | Gupta     | ROLE_STAFF |
+| amyfofana@venus.com     | Amy        | Fofana    | ROLE_STAFF |
