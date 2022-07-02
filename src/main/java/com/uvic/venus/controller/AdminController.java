@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -47,10 +47,18 @@ public class AdminController {
         return ResponseEntity.ok(userInfoList);
     }
 
+    public void updateUser(JdbcUserDetailsManager manager, User.UserBuilder builder) {
+        manager.updateUser(builder.build());
+    }
+
+    public UserDetails loadUserByUsername(JdbcUserDetailsManager manager, String username) {
+        return manager.loadUserByUsername(username);
+    }
+
     @RequestMapping(value ="/enableuser", method = RequestMethod.GET)
     public ResponseEntity<?> enableUserAccount(@RequestParam String username, @RequestParam boolean enable){
         JdbcUserDetailsManager manager = new JdbcUserDetailsManager(dataSource);
-        UserDetails userDetails = manager.loadUserByUsername(username);
+        UserDetails userDetails = loadUserByUsername(manager, username);
 
         User.UserBuilder builder = User.builder();
         builder.username(userDetails.getUsername());
@@ -58,7 +66,7 @@ public class AdminController {
         builder.authorities(userDetails.getAuthorities());
         builder.disabled(!enable);
 
-        manager.updateUser(builder.build());
+        updateUser(manager, builder);
         return ResponseEntity.ok("User Updated Successfully");
     }
 
@@ -68,7 +76,7 @@ public class AdminController {
         authorities.add(new SimpleGrantedAuthority(role));
 
         JdbcUserDetailsManager manager = new JdbcUserDetailsManager(dataSource);
-        UserDetails userDetails = manager.loadUserByUsername(username);
+        UserDetails userDetails = loadUserByUsername(manager, username);
 
         User.UserBuilder builder = User.builder();
         builder.username(userDetails.getUsername());
@@ -76,8 +84,12 @@ public class AdminController {
         builder.authorities(authorities);
         builder.disabled(userDetails.isEnabled());
 
-        manager.updateUser(builder.build());
-        return ResponseEntity.ok("User Updated Successfully");
+        updateUser(manager, builder);
+
+        Object[] userAuthorities = userDetails.getAuthorities().toArray();
+        GrantedAuthority oldAuthority =  (GrantedAuthority) userAuthorities[0];
+        String oldRole = oldAuthority.getAuthority();
+        return ResponseEntity.ok(String.format("User Role Updated from %s to %s", oldRole, role));
     }
 
     @PostMapping(value = "/handlefileupload")
