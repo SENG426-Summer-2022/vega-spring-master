@@ -87,6 +87,7 @@ public class AdminController {
         return ResponseEntity.ok(String.format("User Role Updated from %s to %s", oldRole, role));
     }
 
+    // A GET request access-point to delete a user
     @RequestMapping(value="/deleteuser", method = RequestMethod.GET)
     public ResponseEntity<?> deleteUser(@RequestParam String username){
 
@@ -111,6 +112,7 @@ public class AdminController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User Not Found");
     }
 
+    // A GET request access point to change email(username) of a user
     @RequestMapping(value="/changeemail", method = RequestMethod.GET)
     public ResponseEntity<?> changeEmail(@RequestParam String username, @RequestParam String newEmail){
         //TODO: Test this to see if username gets updated in users DB too.
@@ -121,6 +123,7 @@ public class AdminController {
         return ResponseEntity.ok("");
     }
 
+    // A GET request access point to change User's First and/or Last names.
     @RequestMapping(value="/changeusername", method = RequestMethod.GET)
     public ResponseEntity<?> changeUserName(@RequestParam String username, @RequestParam String newuserFirstname, @RequestParam String newuserLastname){
 
@@ -140,8 +143,9 @@ public class AdminController {
         return ResponseEntity.ok("");
     }
 
+    // A POST request access point to update email(username), First name and last name of a user
     @RequestMapping(value="/updateuser", method = RequestMethod.POST)
-    public ResponseEntity<?> updateUser(@RequestParam String username, @RequestParam String newusername, @RequestParam String newFirstname, @RequestParam String newLastname ){
+    public ResponseEntity<?> updateUser(@RequestParam String username, @RequestParam String newusername, @RequestParam String newFirstname, @RequestParam String newLastname ) {
 
         //For debug purposes
         System.out.println(username);
@@ -149,14 +153,27 @@ public class AdminController {
         System.out.println(newFirstname);
         System.out.println(newLastname);
 
-        // Get User by username key
+        // Get User from Users DB by old username key
+        JdbcUserDetailsManager manager = new JdbcUserDetailsManager(dataSource);
+        UserDetails userDetails = loadUserByUsername(manager, username);
+
+        // Update user's username(email)
+        User.UserBuilder builder = User.builder();
+        builder.username(newusername);
+        builder.password(userDetails.getPassword());
+        builder.authorities(userDetails.getAuthorities());
+
+        // Save to Users DB
+        updateUser(manager, builder);
+
+        // Get User from userInfo DB by username key
         UserInfo userToUpdate = userInfoDAO.getById(username);
 
-        //Update to new First and Last names
-        userToUpdate.setFirstName(newuserFirstname);
-        userToUpdate.setLastName(newuserLastname);
+        // Update to new First and Last names
+        userToUpdate.setFirstName(newFirstname);
+        userToUpdate.setLastName(newLastname);
 
-        //Terminal Display the update
+        // Terminal Display the update
         System.out.println(userToUpdate);
 
         // Save the changes to DB
