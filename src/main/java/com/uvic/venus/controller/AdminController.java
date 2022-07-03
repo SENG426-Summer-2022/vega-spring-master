@@ -5,6 +5,8 @@ import com.uvic.venus.model.UserInfoWithRole;
 import com.uvic.venus.repository.UserInfoDAO;
 import com.uvic.venus.storage.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,12 +15,10 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -59,10 +59,18 @@ public class AdminController {
         return ResponseEntity.ok(userWithRoleList);
     }
 
+    public void updateUser(JdbcUserDetailsManager manager, User.UserBuilder builder) {
+        manager.updateUser(builder.build());
+    }
+
+    public UserDetails loadUserByUsername(JdbcUserDetailsManager manager, String username) {
+        return manager.loadUserByUsername(username);
+    }
+
     @GetMapping(value ="/enableuser")
     public ResponseEntity<String> enableUserAccount(@RequestParam String username, @RequestParam boolean enable){
         JdbcUserDetailsManager manager = new JdbcUserDetailsManager(dataSource);
-        UserDetails userDetails = manager.loadUserByUsername(username);
+        UserDetails userDetails = loadUserByUsername(manager, username);
 
         User.UserBuilder builder = User.builder();
         builder.username(userDetails.getUsername());
@@ -70,7 +78,7 @@ public class AdminController {
         builder.authorities(userDetails.getAuthorities());
         builder.disabled(!enable);
 
-        manager.updateUser(builder.build());
+        updateUser(manager, builder);
         return ResponseEntity.ok("User Updated Successfully");
     }
 
@@ -80,7 +88,7 @@ public class AdminController {
         authorities.add(new SimpleGrantedAuthority(role));
 
         JdbcUserDetailsManager manager = new JdbcUserDetailsManager(dataSource);
-        UserDetails userDetails = manager.loadUserByUsername(username);
+        UserDetails userDetails = loadUserByUsername(manager, username);
 
         User.UserBuilder builder = User.builder();
         builder.username(userDetails.getUsername());
@@ -88,8 +96,12 @@ public class AdminController {
         builder.authorities(authorities);
         builder.disabled(userDetails.isEnabled());
 
-        manager.updateUser(builder.build());
-        return ResponseEntity.ok("User Updated Successfully");
+        updateUser(manager, builder);
+
+        Object[] userAuthorities = userDetails.getAuthorities().toArray();
+        GrantedAuthority oldAuthority =  (GrantedAuthority) userAuthorities[0];
+        String oldRole = oldAuthority.getAuthority();
+        return ResponseEntity.ok(String.format("User Role Updated from %s to %s", oldRole, role));
     }
 
     @PostMapping(value = "/handlefileupload")
