@@ -50,11 +50,11 @@ public class AdminController {
                                            u.getLastName(),
 
                                            // It may be better to make this an array if we add more roles
-                                           manager.loadUserByUsername(u.getUsername()).getAuthorities()
+                                           loadUserByUsername(manager, u.getUsername()).getAuthorities()
                                            .contains(new SimpleGrantedAuthority("ROLE_STAFF"))
                                            ? new SimpleGrantedAuthority("ROLE_STAFF")
                                            : new SimpleGrantedAuthority("ROLE_USER"),
-                                           manager.loadUserByUsername(u.getUsername()).isEnabled()))
+                                           loadUserByUsername(manager, u.getUsername()).isEnabled()))
             .collect(Collectors.toList());
         return ResponseEntity.ok(userWithRoleList);
     }
