@@ -4,6 +4,7 @@ import com.uvic.venus.model.UserInfo;
 import com.uvic.venus.repository.UserInfoDAO;
 import com.uvic.venus.storage.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -20,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/admin")
@@ -83,6 +85,84 @@ public class AdminController {
         GrantedAuthority oldAuthority =  (GrantedAuthority) userAuthorities[0];
         String oldRole = oldAuthority.getAuthority();
         return ResponseEntity.ok(String.format("User Role Updated from %s to %s", oldRole, role));
+    }
+
+    @RequestMapping(value="/deleteuser", method = RequestMethod.GET)
+    public ResponseEntity<?> deleteUser(@RequestParam String username){
+
+        // Open a JDBC manager to connect to Users DB.
+        JdbcUserDetailsManager manager = new JdbcUserDetailsManager(dataSource);
+
+        // A sanity check before deletion
+        if(manager.userExists(username)){
+            // Get the user to delete
+            Optional<UserInfo> userToDelete = userInfoDAO.findById(username);
+
+            // Deleting user from UserInfo DB
+            userInfoDAO.delete(userToDelete.get());
+
+            // Deleting user from Users DB
+            manager.deleteUser(username);
+
+            //System.out.println("User Deleted");
+
+            return ResponseEntity.ok(username + " deleted successfully!");
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User Not Found");
+    }
+
+    @RequestMapping(value="/changeemail", method = RequestMethod.GET)
+    public ResponseEntity<?> changeEmail(@RequestParam String username, @RequestParam String newEmail){
+        //TODO: Test this to see if username gets updated in users DB too.
+        UserInfo userToUpdate = userInfoDAO.getById(username);
+        userToUpdate.setUsername(username);
+        userInfoDAO.save(userToUpdate);
+
+        return ResponseEntity.ok("");
+    }
+
+    @RequestMapping(value="/changeusername", method = RequestMethod.GET)
+    public ResponseEntity<?> changeUserName(@RequestParam String username, @RequestParam String newuserFirstname, @RequestParam String newuserLastname){
+
+        // Get User by username key
+        UserInfo userToUpdate = userInfoDAO.getById(username);
+
+        //Update to new First and Last names
+        userToUpdate.setFirstName(newuserFirstname);
+        userToUpdate.setLastName(newuserLastname);
+
+        //Terminal Display the update
+        System.out.println(userToUpdate);
+
+        // Save the changes to DB
+        userInfoDAO.save(userToUpdate);
+
+        return ResponseEntity.ok("");
+    }
+
+    @RequestMapping(value="/updateuser", method = RequestMethod.POST)
+    public ResponseEntity<?> updateUser(@RequestParam String username, @RequestParam String newusername, @RequestParam String newFirstname, @RequestParam String newLastname ){
+
+        //For debug purposes
+        System.out.println(username);
+        System.out.println(newusername);
+        System.out.println(newFirstname);
+        System.out.println(newLastname);
+
+        // Get User by username key
+        UserInfo userToUpdate = userInfoDAO.getById(username);
+
+        //Update to new First and Last names
+        userToUpdate.setFirstName(newuserFirstname);
+        userToUpdate.setLastName(newuserLastname);
+
+        //Terminal Display the update
+        System.out.println(userToUpdate);
+
+        // Save the changes to DB
+        userInfoDAO.save(userToUpdate);
+
+        return ResponseEntity.ok("");
     }
 
     @PostMapping(value = "/handlefileupload")
