@@ -42,7 +42,7 @@ public class AdminTests {
     StorageService storageService;
 
     @Test
-    public void enableUser() throws Exception {
+    void enableUser() throws Exception {
         adminController = spy(new AdminController());
         MockitoAnnotations.openMocks(this);
 
@@ -64,7 +64,7 @@ public class AdminTests {
     }
 
     @Test
-    public void disableUser() throws Exception {
+    void disableUser() throws Exception {
         adminController = spy(new AdminController());
         MockitoAnnotations.openMocks(this);
 
@@ -86,7 +86,7 @@ public class AdminTests {
     }
 
     @Test
-    public void changeRoleFromStaffToUser() throws Exception {
+    void changeRoleFromStaffToUser() throws Exception {
         List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
         authorities.add(new SimpleGrantedAuthority("ROLE_STAFF"));
         UserDetails userDetails = new User( "username",
@@ -109,7 +109,7 @@ public class AdminTests {
     }
 
     @Test
-    public void changeRoleFromStaffToAdmin() throws Exception {
+    void changeRoleFromStaffToAdmin() throws Exception {
         List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
         authorities.add(new SimpleGrantedAuthority("ROLE_STAFF"));
         UserDetails userDetails = new User( "username",
@@ -132,7 +132,7 @@ public class AdminTests {
     }
 
     @Test
-    public void changeRoleFromUserToStaff() throws Exception {
+    void changeRoleFromUserToStaff() throws Exception {
         List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
         authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
         UserDetails userDetails = new User( "username",
@@ -155,7 +155,7 @@ public class AdminTests {
     }
 
     @Test
-    public void changeRoleFromUserToAdmin() throws Exception {
+    void changeRoleFromUserToAdmin() throws Exception {
         List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
         authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
         UserDetails userDetails = new User( "username",
@@ -178,7 +178,7 @@ public class AdminTests {
     }
 
     @Test
-    public void changeRoleFromAdminToUser() throws Exception {
+    void changeRoleFromAdminToUser() throws Exception {
         List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
         authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
         UserDetails userDetails = new User( "username",
@@ -201,7 +201,7 @@ public class AdminTests {
     }
 
     @Test
-    public void changeRoleFromAdminToStaff() throws Exception {
+    void changeRoleFromAdminToStaff() throws Exception {
         List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
         authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
         UserDetails userDetails = new User( "username",

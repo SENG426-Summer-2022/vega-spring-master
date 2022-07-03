@@ -57,7 +57,7 @@ class LoginTests {
     UserInfoDAO userInfoDAO;
 
     @Test
-    public void register_valid() throws Exception {
+    void register_valid() throws Exception {
         loginController = spy(new LoginController());
         MockitoAnnotations.openMocks(this);
 
@@ -71,7 +71,7 @@ class LoginTests {
     }
 
     @Test
-    public void register_invalid_noUsername() throws Exception {
+    void register_invalid_noUsername() throws Exception {
         loginController = spy(new LoginController());
         MockitoAnnotations.openMocks(this);
 
@@ -83,11 +83,11 @@ class LoginTests {
             loginController.registerUser(user);
         });
  
-        assertThat("username cannot be null").isEqualTo(thrown.getMessage());
+        assertThat(thrown.getMessage()).isEqualTo("username cannot be null");
     }
 
     @Test
-    public void register_invalid_noPassword() throws Exception {
+    void register_invalid_noPassword() throws Exception {
         loginController = spy(new LoginController());
         MockitoAnnotations.openMocks(this);
 
@@ -99,11 +99,11 @@ class LoginTests {
             loginController.registerUser(user);
         });
  
-        assertThat("password cannot be null").isEqualTo(thrown.getMessage());
+        assertThat(thrown.getMessage()).isEqualTo("password cannot be null");
     }
 
     @Test
-    public void login_valid() throws Exception {
+    void login_valid() throws Exception {
         loginController = spy(new LoginController());
         MockitoAnnotations.openMocks(this);
 
@@ -132,7 +132,7 @@ class LoginTests {
     }
 
     @Test
-    public void login_invalid_badPassword() throws Exception {
+    void login_invalid_badPassword() throws Exception {
         loginController = spy(new LoginController());
         MockitoAnnotations.openMocks(this);
 
