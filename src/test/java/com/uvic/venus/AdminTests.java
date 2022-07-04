@@ -3,6 +3,7 @@ package com.uvic.venus;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.spy;
@@ -20,6 +21,8 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import com.uvic.venus.controller.AdminController;
+import com.uvic.venus.model.UserInfo;
+import com.uvic.venus.model.UserInfoWithRole;
 import com.uvic.venus.repository.UserInfoDAO;
 import com.uvic.venus.storage.StorageService;
 
@@ -40,6 +43,94 @@ public class AdminTests {
 
     @Mock
     StorageService storageService;
+
+    @Test
+    void fetchAllUsersSingleUser() throws Exception {
+        adminController = spy(new AdminController());
+        MockitoAnnotations.openMocks(this);
+
+        UserInfoWithRole userInfo = new UserInfoWithRole("username",
+                                                         "fname",
+                                                         "lname",
+                                                         "ROLE_USER",
+                                                         true);
+        ArrayList<UserInfoWithRole> expectedinfo = new ArrayList<UserInfoWithRole>();
+        expectedinfo.add(userInfo);
+
+        // Mock the entry in the database
+        List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
+        authorities.add(userInfo.getRole());
+        UserDetails userDetails = new User(userInfo.getUsername(), "password", userInfo.getEnabled(),
+                                           true, true, true, authorities);
+        doReturn(userDetails).when(adminController).loadUserByUsername(any(JdbcUserDetailsManager.class), anyString());
+
+
+        // Mock for loading the user for lookup
+        List<UserInfo> userlist = new ArrayList<UserInfo>();
+        userlist.add(new UserInfo(userInfo.getUsername(), userInfo.getFirstName(), userInfo.getLastName()));
+        doReturn(userlist).when(userInfoDAO).findAll();
+
+        ResponseEntity<?> responseEntity = adminController.fetchAllUsers();
+
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        List<UserInfoWithRole> users = (List<UserInfoWithRole>) responseEntity.getBody();
+        assertThat(users.get(0).getUsername()).isEqualTo(userInfo.getUsername());
+        assertThat(users.get(0).getFirstName()).isEqualTo(userInfo.getFirstName());
+        assertThat(users.get(0).getRole()).isEqualTo(userInfo.getRole());
+        assertThat(users.get(0).getEnabled()).isEqualTo(userInfo.getEnabled());
+    }
+
+    @Test
+    void fetchAllUsersMultiUser() throws Exception {
+        adminController = spy(new AdminController());
+        MockitoAnnotations.openMocks(this);
+
+        ArrayList<UserInfoWithRole> expectedinfo = new ArrayList<UserInfoWithRole>();
+        expectedinfo.add(new UserInfoWithRole("username0", "fname0", "lname0", "ROLE_USER", true));
+        expectedinfo.add(new UserInfoWithRole("username1", "fname1", "lname1", "ROLE_STAFF", true));
+
+        List<UserInfo> userlist = new ArrayList<UserInfo>();
+
+        for (UserInfoWithRole user : expectedinfo) {
+            List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
+            authorities.add(user.getRole());
+            UserDetails userDetails = new User(user.getUsername(), "password", user.getEnabled(), true, true, true,
+                    authorities);
+            // Mock the entry in the database
+            doReturn(userDetails).when(adminController).loadUserByUsername(any(JdbcUserDetailsManager.class),
+                                                                           eq(user.getUsername()));
+
+            // Mock for loading the user for lookup
+            userlist.add(new UserInfo(user.getUsername(), user.getFirstName(), user.getLastName()));
+        }
+
+        doReturn(userlist).when(userInfoDAO).findAll();
+        ResponseEntity<?> responseEntity = adminController.fetchAllUsers();
+
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        List<UserInfoWithRole> users = (List<UserInfoWithRole>) responseEntity.getBody();
+        for(int i = 0; i < users.size(); i++){
+            assertThat(users.get(i).getUsername()).isEqualTo(expectedinfo.get(i).getUsername());
+            assertThat(users.get(i).getFirstName()).isEqualTo(expectedinfo.get(i).getFirstName());
+            assertThat(users.get(i).getRole()).isEqualTo(expectedinfo.get(i).getRole());
+            assertThat(users.get(i).getEnabled()).isEqualTo(expectedinfo.get(i).getEnabled());
+        }
+    }
+
+    @Test
+    void fetchAllUsersNoUser() throws Exception {
+        adminController = spy(new AdminController());
+        MockitoAnnotations.openMocks(this);
+
+        doReturn(new ArrayList<UserInfo>()).when(userInfoDAO).findAll();
+
+        ResponseEntity<?> responseEntity = adminController.fetchAllUsers();
+
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat((List<UserInfoWithRole>) responseEntity.getBody()).isEmpty();
+    }
 
     @Test
     void enableUser() throws Exception {

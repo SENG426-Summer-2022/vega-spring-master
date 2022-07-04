@@ -1,15 +1,20 @@
 package com.uvic.venus.controller;
 
 import com.uvic.venus.model.UserInfo;
+import com.uvic.venus.model.UserInfoWithRole;
 import com.uvic.venus.repository.UserInfoDAO;
 import com.uvic.venus.storage.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.data.repository.query.Param;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -20,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/admin")
@@ -34,10 +40,23 @@ public class AdminController {
     @Autowired
     StorageService storageService;
 
-    @RequestMapping(value = "/fetchusers", method = RequestMethod.GET)
-    public ResponseEntity<?> fetchAllUsers(){
+    @GetMapping(value = "/fetchusers")
+    public ResponseEntity<List<UserInfoWithRole>> fetchAllUsers(){
         List<UserInfo> userInfoList = userInfoDAO.findAll();
-        return ResponseEntity.ok(userInfoList);
+        JdbcUserDetailsManager manager = new JdbcUserDetailsManager(dataSource);
+        List<UserInfoWithRole> userWithRoleList = userInfoList.stream()
+            .map(u -> new UserInfoWithRole(u.getUsername(),
+                                           u.getFirstName(),
+                                           u.getLastName(),
+
+                                           // It may be better to make this an array if we add more roles
+                                           loadUserByUsername(manager, u.getUsername()).getAuthorities()
+                                           .contains(new SimpleGrantedAuthority("ROLE_STAFF"))
+                                           ? new SimpleGrantedAuthority("ROLE_STAFF")
+                                           : new SimpleGrantedAuthority("ROLE_USER"),
+                                           loadUserByUsername(manager, u.getUsername()).isEnabled()))
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(userWithRoleList);
     }
 
     public void updateUser(JdbcUserDetailsManager manager, User.UserBuilder builder) {
@@ -48,8 +67,8 @@ public class AdminController {
         return manager.loadUserByUsername(username);
     }
 
-    @RequestMapping(value ="/enableuser", method = RequestMethod.GET)
-    public ResponseEntity<?> enableUserAccount(@RequestParam String username, @RequestParam boolean enable){
+    @GetMapping(value ="/enableuser")
+    public ResponseEntity<String> enableUserAccount(@RequestParam String username, @RequestParam boolean enable){
         JdbcUserDetailsManager manager = new JdbcUserDetailsManager(dataSource);
         UserDetails userDetails = loadUserByUsername(manager, username);
 
@@ -63,8 +82,8 @@ public class AdminController {
         return ResponseEntity.ok("User Updated Successfully");
     }
 
-    @RequestMapping(value ="/changerole", method = RequestMethod.GET)
-    public ResponseEntity<?> changeRole(@RequestParam String username, @RequestParam String role){
+    @GetMapping(value ="/changerole")
+    public ResponseEntity<String> changeRole(@RequestParam String username, @RequestParam String role){
         List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
         authorities.add(new SimpleGrantedAuthority(role));
 
@@ -86,7 +105,7 @@ public class AdminController {
     }
 
     @PostMapping(value = "/handlefileupload")
-    public ResponseEntity<?> handleFileUpload(@RequestParam("file") MultipartFile file){
+    public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile file){
         storageService.store(file);
         return ResponseEntity.ok("File uploaded Successfully");
     }
