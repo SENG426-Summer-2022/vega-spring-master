@@ -384,6 +384,9 @@ public class AdminTests {
         doNothing().when(adminController).SavetoUserInfoDB(any(UserInfo.class));
         doReturn(testUserDetails).when(adminController).loadUserByUsername(any(JdbcUserDetailsManager.class), anyString());
         doNothing().when(adminController).updateUser(any(JdbcUserDetailsManager.class), any(User.UserBuilder.class));
+        doNothing().when(adminController).deleteFromUserInfoDB(any(UserInfo.class));
+        doNothing().when(adminController).deleteFromUsersDB(any(JdbcUserDetailsManager.class), anyString());
+        doNothing().when(adminController).createUser(any(JdbcUserDetailsManager.class), any(User.UserBuilder.class));
 
         ResponseEntity<?> responseEntity = adminController.updateUser("username","newUsername", "newfirstname", "newlastname");
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);

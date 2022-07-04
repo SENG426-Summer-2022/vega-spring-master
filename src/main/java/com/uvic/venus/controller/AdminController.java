@@ -65,6 +65,10 @@ public class AdminController {
         manager.updateUser(builder.build());
     }
 
+    public void createUser(JdbcUserDetailsManager manager, User.UserBuilder builder) {
+        manager.createUser(builder.build());
+    }
+
     public UserDetails loadUserByUsername(JdbcUserDetailsManager manager, String username) {
         return manager.loadUserByUsername(username);
     }
@@ -191,31 +195,37 @@ public class AdminController {
         System.out.println(newFirstname);
         System.out.println(newLastname);
 
-        // Get User from Users DB by old username key
         JdbcUserDetailsManager manager = new JdbcUserDetailsManager(dataSource);
+
+        // Get User from userInfo DB by username key
+        UserInfo userToDelete = getUserFromUserInfo(username);
+
+        // Get User from Users DB by old username key
         UserDetails userDetails = loadUserByUsername(manager, username);
 
-        // Update user's username(email)
+        // Get old user's password and authorities before deleting
         User.UserBuilder builder = User.builder();
         builder.username(newusername);
         builder.password(userDetails.getPassword());
         builder.authorities(userDetails.getAuthorities());
 
-        // Save to Users DB
-        updateUser(manager, builder);
+        //Create a replacement User to update to
+        UserInfo replacementUser = new UserInfo(newusername, newFirstname, newLastname);
 
-        // Get User from userInfo DB by username key
-        UserInfo userToUpdate = getUserFromUserInfo(username);
+        // Delete old user from UserInfoDB  (delete user from userinfo first)
+        deleteFromUserInfoDB(userToDelete);
 
-        // Update to new First and Last names
-        userToUpdate.setFirstName(newFirstname);
-        userToUpdate.setLastName(newLastname);
+        //Delete old user from UsersDB
+        deleteFromUsersDB(manager, username);
+
+        //Save changes to Users DB
+        createUser(manager, builder);
+
+        // Save the changes to UserInfo DB
+        SavetoUserInfoDB(replacementUser);
 
         // Terminal Display the update
-        System.out.println(userToUpdate);
-
-        // Save the changes to DB
-        SavetoUserInfoDB(userToUpdate);
+        System.out.println(replacementUser);
 
         return ResponseEntity.ok("");
     }
