@@ -67,8 +67,7 @@ public class AdminTests {
 
         // Mock for loading the user for lookup
         List<UserInfo> userlist = new ArrayList<UserInfo>();
-        List<UserInfo> userlist2 = userlist;
-		userlist2.add(new UserInfo(userInfo.getUsername(), userInfo.getFirstName(), userInfo.getLastName()));
+        userlist.add(new UserInfo(userInfo.getUsername(), userInfo.getFirstName(), userInfo.getLastName()));
         doReturn(userlist).when(userInfoDAO).findAll();
 
         ResponseEntity<?> responseEntity = adminController.fetchAllUsers();

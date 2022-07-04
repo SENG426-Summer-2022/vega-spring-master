@@ -37,11 +37,9 @@ public class PasswordController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User Not Found");
 
 	UserDetails userDetails = loadUserByUsername(manager, auth.getName());
-	System.out.println(userDetails.getAuthorities());
 
 	User.UserBuilder builder = User.builder();
         builder.username(userDetails.getUsername());
-        // builder.password(userDetails.getPassword());
         builder.password(password);
         builder.authorities(userDetails.getAuthorities());
         builder.disabled(userDetails.isEnabled());
