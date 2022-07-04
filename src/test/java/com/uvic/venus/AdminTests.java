@@ -3,10 +3,10 @@ package com.uvic.venus;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.*;
 
+import com.uvic.venus.controller.LoginController;
+import com.uvic.venus.model.UserInfo;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -221,5 +221,79 @@ public class AdminTests {
         
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat((String) responseEntity.getBody()).isEqualTo("User Role Updated from ROLE_ADMIN to ROLE_STAFF");
+    }
+
+    @Test
+    void deleteUser() throws Exception {
+        adminController = spy(new AdminController());
+        MockitoAnnotations.openMocks(this);
+
+        UserInfo testUser = new UserInfo("username","firstname","lastname");
+        List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        UserDetails userDetails = new User( "username", "pass",true,true,true,true, authorities);
+
+        doReturn(testUser).when(adminController).getUserFromUserInfo(anyString());
+        doReturn(true).when(adminController).UserExistsCheck(any(JdbcUserDetailsManager.class), anyString());
+        doNothing().when(adminController).deleteFromUserInfoDB(any(UserInfo.class));
+        doNothing().when(adminController).deleteFromUsersDB(any(JdbcUserDetailsManager.class), anyString());
+
+        ResponseEntity<?> responseEntity = adminController.deleteUser("username");
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat((String) responseEntity.getBody()).isEqualTo("username deleted successfully!");
+
+    }
+
+    @Test
+    void changeEmailTest() throws Exception{
+        adminController = spy(new AdminController());
+        MockitoAnnotations.openMocks(this);
+
+
+        UserInfo testUser = new UserInfo("oldusername", "firstname", "lastname");
+
+       // UserInfoDAO mockedUserInfoDao = mock( UserInfoDAO.class );
+        doReturn(testUser).when(adminController).getUserFromUserInfo(anyString());
+        doNothing().when(adminController).SavetoUserInfoDB(any(UserInfo.class));
+
+        ResponseEntity<?> responseEntity = adminController.changeEmail("oldusername", "newusername");
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    void changeUserFirstAndLastNameTest() throws Exception{
+        adminController = spy(new AdminController());
+        MockitoAnnotations.openMocks(this);
+
+
+        UserInfo testUser = new UserInfo("username", "oldfirstname", "oldlastname");
+
+        // UserInfoDAO mockedUserInfoDao = mock( UserInfoDAO.class );
+        doReturn(testUser).when(adminController).getUserFromUserInfo(anyString());
+        doNothing().when(adminController).SavetoUserInfoDB(any(UserInfo.class));
+
+        ResponseEntity<?> responseEntity = adminController.changeUserName("username", "newfirstname", "newlastname");
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+    }
+
+    @Test
+    void updateUserTest() throws Exception{
+        adminController = spy(new AdminController());
+        MockitoAnnotations.openMocks(this);
+
+        List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        UserInfo testUser = new UserInfo("username", "oldfirstname", "oldlastname");
+        UserDetails testUserDetails = new User( "username", "password", true, true, true, true, authorities);;
+
+        doReturn(testUser).when(adminController).getUserFromUserInfo(anyString());
+        doNothing().when(adminController).SavetoUserInfoDB(any(UserInfo.class));
+        doReturn(testUserDetails).when(adminController).loadUserByUsername(any(JdbcUserDetailsManager.class), anyString());
+        doNothing().when(adminController).updateUser(any(JdbcUserDetailsManager.class), any(User.UserBuilder.class));
+
+        ResponseEntity<?> responseEntity = adminController.updateUser("username","newUsername", "newfirstname", "newlastname");
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+
     }
 }

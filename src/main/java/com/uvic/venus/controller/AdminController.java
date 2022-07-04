@@ -50,6 +50,26 @@ public class AdminController {
         return manager.loadUserByUsername(username);
     }
 
+    public UserInfo getUserFromUserInfo(String username){
+        return userInfoDAO.getById(username);
+    }
+
+    public void SavetoUserInfoDB(UserInfo userInfo) {
+        userInfoDAO.save(userInfo);
+    }
+
+    public Boolean UserExistsCheck(JdbcUserDetailsManager manager, String username){
+        return manager.userExists(username);
+    }
+
+    public void deleteFromUserInfoDB(UserInfo userToDelete){
+        userInfoDAO.delete(userToDelete);
+    }
+
+    public void deleteFromUsersDB(JdbcUserDetailsManager manager, String username){
+        manager.deleteUser(username);
+    }
+
     @RequestMapping(value ="/enableuser", method = RequestMethod.GET)
     public ResponseEntity<?> enableUserAccount(@RequestParam String username, @RequestParam boolean enable){
         JdbcUserDetailsManager manager = new JdbcUserDetailsManager(dataSource);
@@ -95,17 +115,15 @@ public class AdminController {
         JdbcUserDetailsManager manager = new JdbcUserDetailsManager(dataSource);
 
         // A sanity check before deletion
-        if(manager.userExists(username)){
+        if(UserExistsCheck(manager,username)){
             // Get the user to delete
-            Optional<UserInfo> userToDelete = userInfoDAO.findById(username);
+            UserInfo userToDelete = getUserFromUserInfo(username);
 
             // Deleting user from UserInfo DB
-            userInfoDAO.delete(userToDelete.get());
+            deleteFromUserInfoDB(userToDelete);
 
             // Deleting user from Users DB
-            manager.deleteUser(username);
-
-            //System.out.println("User Deleted");
+            deleteFromUsersDB(manager, username);
 
             return ResponseEntity.ok(username + " deleted successfully!");
         }
@@ -115,10 +133,10 @@ public class AdminController {
     // A GET request access point to change email(username) of a user
     @RequestMapping(value="/changeemail", method = RequestMethod.GET)
     public ResponseEntity<?> changeEmail(@RequestParam String username, @RequestParam String newEmail){
-        //TODO: Test this to see if username gets updated in users DB too.
-        UserInfo userToUpdate = userInfoDAO.getById(username);
+
+        UserInfo userToUpdate = getUserFromUserInfo(username);
         userToUpdate.setUsername(username);
-        userInfoDAO.save(userToUpdate);
+        SavetoUserInfoDB(userToUpdate);
 
         return ResponseEntity.ok("");
     }
@@ -128,7 +146,7 @@ public class AdminController {
     public ResponseEntity<?> changeUserName(@RequestParam String username, @RequestParam String newuserFirstname, @RequestParam String newuserLastname){
 
         // Get User by username key
-        UserInfo userToUpdate = userInfoDAO.getById(username);
+        UserInfo userToUpdate = getUserFromUserInfo(username);
 
         //Update to new First and Last names
         userToUpdate.setFirstName(newuserFirstname);
@@ -138,7 +156,7 @@ public class AdminController {
         System.out.println(userToUpdate);
 
         // Save the changes to DB
-        userInfoDAO.save(userToUpdate);
+        SavetoUserInfoDB(userToUpdate);
 
         return ResponseEntity.ok("");
     }
@@ -167,7 +185,7 @@ public class AdminController {
         updateUser(manager, builder);
 
         // Get User from userInfo DB by username key
-        UserInfo userToUpdate = userInfoDAO.getById(username);
+        UserInfo userToUpdate = getUserFromUserInfo(username);
 
         // Update to new First and Last names
         userToUpdate.setFirstName(newFirstname);
@@ -177,7 +195,7 @@ public class AdminController {
         System.out.println(userToUpdate);
 
         // Save the changes to DB
-        userInfoDAO.save(userToUpdate);
+        SavetoUserInfoDB(userToUpdate);
 
         return ResponseEntity.ok("");
     }
