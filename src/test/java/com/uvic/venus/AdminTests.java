@@ -8,7 +8,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.spy;
 
-import com.uvic.venus.controller.LoginController;
 import com.uvic.venus.model.UserInfo;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -23,7 +22,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import com.uvic.venus.controller.AdminController;
-import com.uvic.venus.model.UserInfo;
 import com.uvic.venus.model.UserInfoWithRole;
 import com.uvic.venus.repository.UserInfoDAO;
 import com.uvic.venus.storage.StorageService;
@@ -327,7 +325,7 @@ public class AdminTests {
         UserDetails userDetails = new User( "username", "pass",true,true,true,true, authorities);
 
         doReturn(testUser).when(adminController).getUserFromUserInfo(anyString());
-        doReturn(true).when(adminController).UserExistsCheck(any(JdbcUserDetailsManager.class), anyString());
+        doReturn(true).when(adminController).userExistsCheck(any(JdbcUserDetailsManager.class), anyString());
         doNothing().when(adminController).deleteFromUserInfoDB(any(UserInfo.class));
         doNothing().when(adminController).deleteFromUsersDB(any(JdbcUserDetailsManager.class), anyString());
 
@@ -347,7 +345,7 @@ public class AdminTests {
 
        // UserInfoDAO mockedUserInfoDao = mock( UserInfoDAO.class );
         doReturn(testUser).when(adminController).getUserFromUserInfo(anyString());
-        doNothing().when(adminController).SavetoUserInfoDB(any(UserInfo.class));
+        doNothing().when(adminController).savetoUserInfoDB(any(UserInfo.class));
 
         ResponseEntity<?> responseEntity = adminController.changeEmail("oldusername", "newusername");
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -363,7 +361,7 @@ public class AdminTests {
 
         // UserInfoDAO mockedUserInfoDao = mock( UserInfoDAO.class );
         doReturn(testUser).when(adminController).getUserFromUserInfo(anyString());
-        doNothing().when(adminController).SavetoUserInfoDB(any(UserInfo.class));
+        doNothing().when(adminController).savetoUserInfoDB(any(UserInfo.class));
 
         ResponseEntity<?> responseEntity = adminController.changeUserName("username", "newfirstname", "newlastname");
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -381,7 +379,7 @@ public class AdminTests {
         UserDetails testUserDetails = new User( "username", "password", true, true, true, true, authorities);;
 
         doReturn(testUser).when(adminController).getUserFromUserInfo(anyString());
-        doNothing().when(adminController).SavetoUserInfoDB(any(UserInfo.class));
+        doNothing().when(adminController).savetoUserInfoDB(any(UserInfo.class));
         doReturn(testUserDetails).when(adminController).loadUserByUsername(any(JdbcUserDetailsManager.class), anyString());
         doNothing().when(adminController).updateUser(any(JdbcUserDetailsManager.class), any(User.UserBuilder.class));
         doNothing().when(adminController).deleteFromUserInfoDB(any(UserInfo.class));

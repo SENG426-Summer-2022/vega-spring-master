@@ -6,9 +6,6 @@ import com.uvic.venus.repository.UserInfoDAO;
 import com.uvic.venus.storage.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.core.io.Resource;
-import org.springframework.data.repository.query.Param;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,7 +15,6 @@ import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,7 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -77,11 +72,11 @@ public class AdminController {
         return userInfoDAO.getById(username);
     }
 
-    public void SavetoUserInfoDB(UserInfo userInfo) {
+    public void savetoUserInfoDB(UserInfo userInfo) {
         userInfoDAO.save(userInfo);
     }
 
-    public Boolean UserExistsCheck(JdbcUserDetailsManager manager, String username){
+    public Boolean userExistsCheck(JdbcUserDetailsManager manager, String username){
         return manager.userExists(username);
     }
 
@@ -139,7 +134,7 @@ public class AdminController {
         JdbcUserDetailsManager manager = new JdbcUserDetailsManager(dataSource);
 
         // A sanity check before deletion
-        if(UserExistsCheck(manager,username)){
+        if(userExistsCheck(manager,username)){
             // Get the user to delete
             UserInfo userToDelete = getUserFromUserInfo(username);
 
@@ -160,7 +155,7 @@ public class AdminController {
 
         UserInfo userToUpdate = getUserFromUserInfo(username);
         userToUpdate.setUsername(username);
-        SavetoUserInfoDB(userToUpdate);
+        savetoUserInfoDB(userToUpdate);
 
         return ResponseEntity.ok("");
     }
@@ -176,11 +171,8 @@ public class AdminController {
         userToUpdate.setFirstName(newuserFirstname);
         userToUpdate.setLastName(newuserLastname);
 
-        //Terminal Display the update
-        System.out.println(userToUpdate);
-
         // Save the changes to DB
-        SavetoUserInfoDB(userToUpdate);
+        savetoUserInfoDB(userToUpdate);
 
         return ResponseEntity.ok("");
     }
@@ -188,12 +180,6 @@ public class AdminController {
     // A POST request access point to update email(username), First name and last name of a user
     @PostMapping(value="/updateuser")
     public ResponseEntity<?> updateUser(@RequestParam String username, @RequestParam String newusername, @RequestParam String newFirstname, @RequestParam String newLastname ) {
-
-        //For debug purposes
-        System.out.println(username);
-        System.out.println(newusername);
-        System.out.println(newFirstname);
-        System.out.println(newLastname);
 
         JdbcUserDetailsManager manager = new JdbcUserDetailsManager(dataSource);
 
@@ -222,10 +208,7 @@ public class AdminController {
         createUser(manager, builder);
 
         // Save the changes to UserInfo DB
-        SavetoUserInfoDB(replacementUser);
-
-        // Terminal Display the update
-        System.out.println(replacementUser);
+        savetoUserInfoDB(replacementUser);
 
         return ResponseEntity.ok("");
     }
