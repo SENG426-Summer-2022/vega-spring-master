@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -27,6 +28,10 @@ public class StorageServiceImpl implements StorageService{
     @Autowired
     public StorageServiceImpl(StorageProperties properties) {
         this.rootLocation = Paths.get(properties.getLocation());
+        // Ensure the storage directory exists
+        File dir = new File(this.rootLocation.toString());
+        if (!dir.exists())
+            dir.mkdir();
     }
 
     @Override

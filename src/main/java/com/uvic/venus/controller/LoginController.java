@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.sql.DataSource;
 import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -56,6 +55,14 @@ public class LoginController {
         return principal;
     }
 
+    public void createUser(JdbcUserDetailsManager manager, User.UserBuilder builder) {
+        manager.createUser(builder.build());
+    }
+
+    public UserDetails loadUserByUsername(JdbcUserDetailsManager manager, String username) {
+        return manager.loadUserByUsername(username);
+    }
+
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
         System.out.println("Entered into createAuthenticationRequests");
@@ -69,7 +76,7 @@ public class LoginController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User Not Found");
         }
         JdbcUserDetailsManager user = new JdbcUserDetailsManager(dataSource);
-        UserDetails userDetails = user.loadUserByUsername(authenticationRequest.getUsername());
+        UserDetails userDetails = loadUserByUsername(user, authenticationRequest.getUsername());
 
         final String jwt = jwtUtil.generateToken(userDetails);
 
@@ -91,7 +98,7 @@ public class LoginController {
         builder.password(user.getPassword());
         builder.username(user.getUsername());
         builder.authorities(authorities);
-        dataManager.createUser(builder.build());
+        createUser(dataManager, builder);
 
         UserInfo userinfo = new UserInfo(user.getUsername(), user.getFirstname(), user.getLastname());
         System.out.println(userinfo);
