@@ -22,6 +22,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,6 +33,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 
 @SpringBootTest
@@ -47,6 +49,10 @@ public class PasswordTests {
 
     @Mock
     AuthenticationManager authenticationManager;
+
+    @Mock
+    PasswordEncoder passwordEncoder;
+
 
     @Mock
     DataSource dataSource;
@@ -84,6 +90,7 @@ public class PasswordTests {
             .loadUserByUsername(any(JdbcUserDetailsManager.class), anyString());
         doNothing().when(passController)
             .updateUser(any(JdbcUserDetailsManager.class), any(User.UserBuilder.class));
+        doReturn("password").when(passwordEncoder).encode(anyString());
 
         Authentication auth = Mockito.mock(Authentication.class);
         SecurityContext securityContext = Mockito.mock(SecurityContext.class);
@@ -91,6 +98,6 @@ public class PasswordTests {
         SecurityContextHolder.setContext(securityContext);
 
         doReturn("username").when(auth).getName();
-        assertThat(passController.updatePassword("hello").getBody()).isEqualTo("username");
+        assertThat(passController.updatePassword("password").getBody()).isEqualTo("username");
     }
 }
