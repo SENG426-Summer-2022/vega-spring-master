@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -21,6 +22,9 @@ public class PasswordController {
 
     @Autowired
     UserInfoDAO userInfoDAO;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     @Autowired
     DataSource dataSource;
@@ -40,9 +44,10 @@ public class PasswordController {
 
 	User.UserBuilder builder = User.builder();
         builder.username(userDetails.getUsername());
+        builder.passwordEncoder(passwordEncoder::encode);
         builder.password(password);
         builder.authorities(userDetails.getAuthorities());
-        builder.disabled(userDetails.isEnabled());
+        builder.disabled(!userDetails.isEnabled());
 
         updateUser(manager, builder);
 	return ResponseEntity.ok(auth.getName());
