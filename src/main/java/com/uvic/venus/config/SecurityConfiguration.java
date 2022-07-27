@@ -27,15 +27,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         auth.jdbcAuthentication()
-                .dataSource(dataSource);
+                .dataSource(dataSource)
+                .passwordEncoder(new BCryptPasswordEncoder());
     }
 
     @Override
     protected void configure(HttpSecurity httpSecurity)
             throws Exception {
         httpSecurity
-                .csrf()
-                .disable()
                 .authorizeRequests().antMatchers("/authenticate", "/register")
                 .permitAll()
                 .and()
