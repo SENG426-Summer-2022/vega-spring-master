@@ -34,6 +34,7 @@ public class PasswordController {
 
     @PostMapping(value = "/updatepassword")
     public ResponseEntity<?> updatePassword(String password){
+    System.out.println("Made it into /updatePassword");
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 	JdbcUserDetailsManager manager = new JdbcUserDetailsManager(dataSource);
 
