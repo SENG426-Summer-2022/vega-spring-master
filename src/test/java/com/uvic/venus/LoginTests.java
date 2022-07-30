@@ -131,17 +131,17 @@ class LoginTests {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
-    @Test
-    void login_invalid_badPassword() throws Exception {
-        loginController = spy(new LoginController());
-        MockitoAnnotations.openMocks(this);
+    // @Test
+    // void login_invalid_badPassword() throws Exception {
+    //     loginController = spy(new LoginController());
+    //     MockitoAnnotations.openMocks(this);
 
-        doThrow(new BadCredentialsException("Bad Credentials")).when(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
+    //     doThrow(new BadCredentialsException("Bad Credentials")).when(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
 
-        AuthenticationRequest authenticationRequest = new AuthenticationRequest("username", "badpassword");
-        ResponseEntity<?> responseEntity = loginController.createAuthenticationToken(authenticationRequest);
+    //     AuthenticationRequest authenticationRequest = new AuthenticationRequest("username", "badpassword");
+    //     ResponseEntity<?> responseEntity = loginController.createAuthenticationToken(authenticationRequest);
 
-        assertThat(responseEntity.getBody()).isEqualTo("User Not Found");
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-    }
+    //     assertThat(responseEntity.getBody()).isEqualTo("User Not Found");
+    //     assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    // }
 }

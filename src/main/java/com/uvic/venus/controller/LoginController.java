@@ -66,18 +66,16 @@ public class LoginController {
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
-        System.out.println("Entered into createAuthenticationRequests");
+        JdbcUserDetailsManager user = new JdbcUserDetailsManager(dataSource);
+        UserDetails userDetails = loadUserByUsername(user, authenticationRequest.getUsername());
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
                             authenticationRequest.getPassword())
             );
         }catch (BadCredentialsException badCredentialsException){
-            System.out.println("Unauthorized");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User Not Found");
         }
-        JdbcUserDetailsManager user = new JdbcUserDetailsManager(dataSource);
-        UserDetails userDetails = loadUserByUsername(user, authenticationRequest.getUsername());
 
         final String jwt = jwtUtil.generateToken(userDetails);
 

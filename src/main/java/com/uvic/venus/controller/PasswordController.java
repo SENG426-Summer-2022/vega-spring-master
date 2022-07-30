@@ -13,7 +13,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+// import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,7 +33,7 @@ public class PasswordController {
     @Autowired
     StorageService storageService;
 
-    @PostMapping(value = "/updatepassword")
+    @GetMapping(value = "/updatepassword")
     public ResponseEntity<?> updatePassword(String password){
     System.out.println("Made it into /updatePassword");
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
