@@ -106,7 +106,7 @@ public class LoginController {
         return ResponseEntity.ok("User Created Successfully");
     }
 
-    @RequestMapping("/csrf")
+    @RequestMapping(value = "/csrf", method = RequestMethod.GET)
      public ResponseEntity<?> csrf(CsrfToken token) {
   		return ResponseEntity.ok(token);
      }

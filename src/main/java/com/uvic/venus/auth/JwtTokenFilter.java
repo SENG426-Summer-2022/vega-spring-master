@@ -33,8 +33,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         String username = null;
         String jwt = null;
 
-        System.out.println("Made it inside the filter");
-
         if(authorizationHeader !=  null  && authorizationHeader.startsWith("Bearer ")){
             jwt = authorizationHeader.substring(7);
             username = jwtUtil.extractUsername(jwt);
@@ -44,18 +42,14 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             JdbcUserDetailsManager userDetailsManager = new JdbcUserDetailsManager(dataSource);
             UserDetails userDetails = userDetailsManager.loadUserByUsername(username);
             System.out.println(userDetails.getAuthorities());
-            System.out.println("Mid filter 1");
             if(jwtUtil.validateToken(jwt,userDetails)){
                 UsernamePasswordAuthenticationToken newToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities()
                 );
                 newToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(newToken);
-                System.out.println("Mid filter 2");
             }
         }
-        System.out.println("Made it to end of filter1");
         filterChain.doFilter(request, response);
-        System.out.println("Made it to end of filter2");
     }
 }

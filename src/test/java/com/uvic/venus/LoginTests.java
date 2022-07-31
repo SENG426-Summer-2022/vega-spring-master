@@ -6,7 +6,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 
 import org.junit.jupiter.api.Test;
@@ -17,7 +16,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.GrantedAuthority;
@@ -130,18 +128,4 @@ class LoginTests {
         assertThat(authorities.get(0).equals(body.getAuthorities()[0])).isTrue();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
-
-    // @Test
-    // void login_invalid_badPassword() throws Exception {
-    //     loginController = spy(new LoginController());
-    //     MockitoAnnotations.openMocks(this);
-
-    //     doThrow(new BadCredentialsException("Bad Credentials")).when(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
-
-    //     AuthenticationRequest authenticationRequest = new AuthenticationRequest("username", "badpassword");
-    //     ResponseEntity<?> responseEntity = loginController.createAuthenticationToken(authenticationRequest);
-
-    //     assertThat(responseEntity.getBody()).isEqualTo("User Not Found");
-    //     assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-    // }
 }
