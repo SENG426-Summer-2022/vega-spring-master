@@ -18,6 +18,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -65,18 +66,16 @@ public class LoginController {
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
-        System.out.println("Entered into createAuthenticationRequests");
+        JdbcUserDetailsManager user = new JdbcUserDetailsManager(dataSource);
+        UserDetails userDetails = loadUserByUsername(user, authenticationRequest.getUsername());
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
                             authenticationRequest.getPassword())
             );
         }catch (BadCredentialsException badCredentialsException){
-            System.out.println("Unauthorized");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User Not Found");
         }
-        JdbcUserDetailsManager user = new JdbcUserDetailsManager(dataSource);
-        UserDetails userDetails = loadUserByUsername(user, authenticationRequest.getUsername());
 
         final String jwt = jwtUtil.generateToken(userDetails);
 
@@ -107,5 +106,8 @@ public class LoginController {
         return ResponseEntity.ok("User Created Successfully");
     }
 
-
+    @RequestMapping(value = "/csrf", method = RequestMethod.GET)
+     public ResponseEntity<?> csrf(CsrfToken token) {
+  		return ResponseEntity.ok(token);
+     }
 }
