@@ -177,7 +177,7 @@ public class AdminController {
         return ResponseEntity.ok("");
     }
 
-    // A POST request access point to update email(username), First name and last name of a user
+    // A request access point to update email(username), First name and last name of a user
     @GetMapping(value="/updateuser")
     public ResponseEntity<?> updateUser(@RequestParam String username, @RequestParam String newusername, @RequestParam String newFirstname, @RequestParam String newLastname ) {
 
