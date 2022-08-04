@@ -37,7 +37,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             throws Exception {
         httpSecurity
                 .csrf()
-                .ignoringAntMatchers("/authenticate")
+                .ignoringAntMatchers("/authenticate", "/register", "/admin/handlefileupload")
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .and()
                 .authorizeRequests().antMatchers("/authenticate", "/register")
